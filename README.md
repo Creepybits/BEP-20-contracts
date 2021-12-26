@@ -11,7 +11,7 @@ A more in depth explaination can be found at https://medium.zanno.se
 This is a simple smart contract that will create a Token at Ethereum or Binance Smart Chain.
 It will mint the requested tokens and leave them at the address of the "owner".
 
-More infor about the contract is found here: https://medium.zanno.se/how-to-make-your-own-cryptocurrency-e1146cb1d11e
+More info about the contract is found here: https://medium.zanno.se/how-to-make-your-own-cryptocurrency-e1146cb1d11e
 
 ---
 
@@ -20,3 +20,8 @@ More infor about the contract is found here: https://medium.zanno.se/how-to-make
 ---
 
 ### faucet.sol
+
+This is a very basic smart contract for a faucet as a way of distributing your cryptocurrency.
+It doesn't have a website, but uses the UI of BscScan/Etherscan.
+
+More info here: https://medium.zanno.se/distribution-of-your-coin-part-1-43a9a7cd54e3
