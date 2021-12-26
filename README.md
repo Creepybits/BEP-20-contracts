@@ -16,3 +16,7 @@ More infor about the contract is found here: https://medium.zanno.se/how-to-make
 ---
 
 ### selfdrop.sol
+
+---
+
+### faucet.sol
