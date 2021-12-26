@@ -19,7 +19,7 @@ More info about the contract is found here: https://medium.zanno.se/how-to-make-
 
 ---
 
-### faucet.sol
+### Faucet.sol
 
 This is a very basic smart contract for a faucet as a way of distributing your cryptocurrency.
 It doesn't have a website, but uses the UI of BscScan/Etherscan.
