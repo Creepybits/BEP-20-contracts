@@ -8,6 +8,7 @@ A more in depth explaination can be found at https://medium.zanno.se
 ---
 
 ### ZannoMoney.sol
+
 This is a simple smart contract that will create a Token at Ethereum or Binance Smart Chain.
 It will mint the requested tokens and leave them at the address of the "owner".
 
@@ -16,6 +17,10 @@ More info about the contract is found here: https://medium.zanno.se/how-to-make-
 ---
 
 ### selfdrop.sol
+
+A simple crowdsale contract that can be used to sell tokens that are already in circulation.
+
+More info about this contract and its use: https://medium.zanno.se/distribution-of-your-coin-part-2-a274d36d9961
 
 ---
 
