@@ -544,140 +544,6 @@ contract MintedCrowdsale is Crowdsale {
     }
 }
 
-contract CappedCrowdsale is Crowdsale {
-    using SafeMath for uint256;
-
-    uint256 private _cap;
-
-    
-    constructor (uint256 cap) public {
-        require(cap > 0, "CappedCrowdsale: cap is 0");
-        _cap = cap;
-    }
-
-    
-    function cap() public view returns (uint256) {
-        return _cap;
-    }
-
-    
-    function capReached() public view returns (bool) {
-        return weiRaised() >= _cap;
-    }
-
-    
-    function _preValidatePurchase(address beneficiary, uint256 weiAmount) internal view {
-        super._preValidatePurchase(beneficiary, weiAmount);
-        require(weiRaised().add(weiAmount) <= _cap, "CappedCrowdsale: cap exceeded");
-    }
-}
-
-contract TimedCrowdsale is Crowdsale {
-    using SafeMath for uint256;
-
-    uint256 private _openingTime;
-    uint256 private _closingTime;
-
-    /**
-     * Event for crowdsale extending
-     * @param newClosingTime new closing time
-     * @param prevClosingTime old closing time
-     */
-    event TimedCrowdsaleExtended(uint256 prevClosingTime, uint256 newClosingTime);
-
-    /**
-     * @dev Reverts if not in crowdsale time range.
-     */
-    modifier onlyWhileOpen {
-        require(isOpen(), "TimedCrowdsale: not open");
-        _;
-    }
-
-    /**
-     * @dev Constructor, takes crowdsale opening and closing times.
-     * @param openingTime Crowdsale opening time
-     * @param closingTime Crowdsale closing time
-     */
-    constructor (uint256 openingTime, uint256 closingTime) public {
-        // solhint-disable-next-line not-rely-on-time
-        require(openingTime >= block.timestamp, "TimedCrowdsale: opening time is before current time");
-        // solhint-disable-next-line max-line-length
-        require(closingTime > openingTime, "TimedCrowdsale: opening time is not before closing time");
-
-        _openingTime = openingTime;
-        _closingTime = closingTime;
-    }
-
-    
-    function openingTime() public view returns (uint256) {
-        return _openingTime;
-    }
-
-    
-    function closingTime() public view returns (uint256) {
-        return _closingTime;
-    }
-
-    
-    function isOpen() public view returns (bool) {
-        // solhint-disable-next-line not-rely-on-time
-        return block.timestamp >= _openingTime && block.timestamp <= _closingTime;
-    }
-
-    
-    function hasClosed() public view returns (bool) {
-        // solhint-disable-next-line not-rely-on-time
-        return block.timestamp > _closingTime;
-    }
-
-    
-    function _preValidatePurchase(address beneficiary, uint256 weiAmount) internal onlyWhileOpen view {
-        super._preValidatePurchase(beneficiary, weiAmount);
-    }
-
-    
-    function _extendTime(uint256 newClosingTime) internal {
-        require(!hasClosed(), "TimedCrowdsale: already closed");
-        // solhint-disable-next-line max-line-length
-        require(newClosingTime > _closingTime, "TimedCrowdsale: new closing time is before current closing time");
-
-        emit TimedCrowdsaleExtended(_closingTime, newClosingTime);
-        _closingTime = newClosingTime;
-    }
-}
-
-contract FinalizableCrowdsale is TimedCrowdsale {
-    using SafeMath for uint256;
-
-    bool private _finalized;
-
-    event CrowdsaleFinalized();
-
-    constructor () internal {
-        _finalized = false;
-    }
-
-    
-    function finalized() public view returns (bool) {
-        return _finalized;
-    }
-
-    
-    function finalize() public {
-        require(!_finalized, "FinalizableCrowdsale: already finalized");
-        require(hasClosed(), "FinalizableCrowdsale: not closed");
-
-        _finalized = true;
-
-        _finalization();
-        emit CrowdsaleFinalized();
-    }
-
-    
-    function _finalization() internal {
-        // solhint-disable-previous-line no-empty-blocks
-    }
-}
 
 contract Secondary is Context {
     address private _primary;
@@ -713,237 +579,24 @@ contract Secondary is Context {
     }
 }
 
-contract Escrow is Secondary {
-    using SafeMath for uint256;
-    using Address for address payable;
-
-    event Deposited(address indexed payee, uint256 weiAmount);
-    event Withdrawn(address indexed payee, uint256 weiAmount);
-
-    mapping(address => uint256) private _deposits;
-
-    function depositsOf(address payee) public view returns (uint256) {
-        return _deposits[payee];
-    }
-
-    
-    function deposit(address payee) public onlyPrimary payable {
-        uint256 amount = msg.value;
-        _deposits[payee] = _deposits[payee].add(amount);
-
-        emit Deposited(payee, amount);
-    }
-
-    
-    function withdraw(address payable payee) public onlyPrimary {
-        uint256 payment = _deposits[payee];
-
-        _deposits[payee] = 0;
-
-        payee.transfer(payment);
-
-        emit Withdrawn(payee, payment);
-    }
-
-    
-    function withdrawWithGas(address payable payee) public onlyPrimary {
-        uint256 payment = _deposits[payee];
-
-        _deposits[payee] = 0;
-
-        payee.sendValue(payment);
-
-        emit Withdrawn(payee, payment);
-    }
-}
-
-contract ConditionalEscrow is Escrow {
-    
-    function withdrawalAllowed(address payee) public view returns (bool);
-
-    function withdraw(address payable payee) public {
-        require(withdrawalAllowed(payee), "ConditionalEscrow: payee is not allowed to withdraw");
-        super.withdraw(payee);
-    }
-}
-
-contract RefundEscrow is ConditionalEscrow {
-    enum State { Active, Refunding, Closed }
-
-    event RefundsClosed();
-    event RefundsEnabled();
-
-    State private _state;
-    address payable private _beneficiary;
-
-    /**
-     * @dev Constructor.
-     * @param beneficiary The beneficiary of the deposits.
-     */
-    constructor (address payable beneficiary) public {
-        require(beneficiary != address(0), "RefundEscrow: beneficiary is the zero address");
-        _beneficiary = beneficiary;
-        _state = State.Active;
-    }
-
-    
-    function state() public view returns (State) {
-        return _state;
-    }
-
-    
-    function beneficiary() public view returns (address) {
-        return _beneficiary;
-    }
-
-    
-    function deposit(address refundee) public payable {
-        require(_state == State.Active, "RefundEscrow: can only deposit while active");
-        super.deposit(refundee);
-    }
-
-   
-    function close() public onlyPrimary {
-        require(_state == State.Active, "RefundEscrow: can only close while active");
-        _state = State.Closed;
-        emit RefundsClosed();
-    }
-
-    
-    function enableRefunds() public onlyPrimary {
-        require(_state == State.Active, "RefundEscrow: can only enable refunds while active");
-        _state = State.Refunding;
-        emit RefundsEnabled();
-    }
-
-    
-    function beneficiaryWithdraw() public {
-        require(_state == State.Closed, "RefundEscrow: beneficiary can only withdraw while closed");
-        _beneficiary.transfer(address(this).balance);
-    }
-
-    
-    function withdrawalAllowed(address) public view returns (bool) {
-        return _state == State.Refunding;
-    }
-}
-
-contract RefundableCrowdsale is Context, FinalizableCrowdsale {
-    using SafeMath for uint256;
-
-    // minimum amount of funds to be raised in weis
-    uint256 private _goal;
-
-    // refund escrow used to hold funds while crowdsale is running
-    RefundEscrow private _escrow;
-
-    
-    constructor (uint256 goal) public {
-        require(goal > 0, "RefundableCrowdsale: goal is 0");
-        _escrow = new RefundEscrow(wallet());
-        _goal = goal;
-    }
-
-    
-    function goal() public view returns (uint256) {
-        return _goal;
-    }
-
-    
-    function claimRefund(address payable refundee) public {
-        require(finalized(), "RefundableCrowdsale: not finalized");
-        require(!goalReached(), "RefundableCrowdsale: goal reached");
-
-        _escrow.withdraw(refundee);
-    }
-
-    
-    function goalReached() public view returns (bool) {
-        return weiRaised() >= _goal;
-    }
-
-    
-    function _finalization() internal {
-        if (goalReached()) {
-            _escrow.close();
-            _escrow.beneficiaryWithdraw();
-        } else {
-            _escrow.enableRefunds();
-        }
-
-        super._finalization();
-    }
-
-    
-    function _forwardFunds() internal {
-        _escrow.deposit.value(msg.value)(_msgSender());
-    }
-}
-
-contract PostDeliveryCrowdsale is TimedCrowdsale {
-    using SafeMath for uint256;
-
-    mapping(address => uint256) private _balances;
-    __unstable__TokenVault private _vault;
-
-    constructor() public {
-        _vault = new __unstable__TokenVault();
-    }
-
-    
-    function withdrawTokens(address beneficiary) public {
-        require(hasClosed(), "PostDeliveryCrowdsale: not closed");
-        uint256 amount = _balances[beneficiary];
-        require(amount > 0, "PostDeliveryCrowdsale: beneficiary is not due any tokens");
-
-        _balances[beneficiary] = 0;
-        _vault.transfer(token(), beneficiary, amount);
-    }
-
-    
-    function balanceOf(address account) public view returns (uint256) {
-        return _balances[account];
-    }
-
-    
-    function _processPurchase(address beneficiary, uint256 tokenAmount) internal {
-        _balances[beneficiary] = _balances[beneficiary].add(tokenAmount);
-        _deliverTokens(address(_vault), tokenAmount);
-    }
-}
 
 
-contract __unstable__TokenVault is Secondary {
-    function transfer(IERC20 token, address to, uint256 amount) public onlyPrimary {
-        token.transfer(to, amount);
-    }
-}
-
-contract RefundablePostDeliveryCrowdsale is RefundableCrowdsale, PostDeliveryCrowdsale {
-    function withdrawTokens(address beneficiary) public {
-        require(finalized(), "RefundablePostDeliveryCrowdsale: not finalized");
-        require(goalReached(), "RefundablePostDeliveryCrowdsale: goal not reached");
-
-        super.withdrawTokens(beneficiary);
-    }
-}
-
-contract SuperSale is Crowdsale, MintedCrowdsale, CappedCrowdsale, TimedCrowdsale, RefundablePostDeliveryCrowdsale{
+contract SuperSale is Crowdsale, MintedCrowdsale{
 
     constructor(
         // Constructor parameters:
         uint rate,
         address payable wallet,
-        Supercoin token,
-        uint goal,
-        uint open,
-        uint close
+        Supercoin token
+        // uint goal,
+        // uint open,
+        // uint close
     )
         // Pass constructor parameters to the crowdsale contracts:
         Crowdsale(rate, wallet, token)
-        TimedCrowdsale(open, close)
-        CappedCrowdsale(goal)
-        RefundableCrowdsale(goal)
+        //  TimedCrowdsale(open, close)
+        // CappedCrowdsale(goal)
+        // RefundableCrowdsale(goal)
         public
     {
         // constructor can stay empty
@@ -959,8 +612,8 @@ contract SaleDeployer {
         // Constructor parameters:
         string memory name,
         string memory symbol,
-        address payable wallet,
-        uint goal
+        address payable wallet
+        // uint goal
     )
         public
     {
@@ -969,7 +622,7 @@ contract SaleDeployer {
         token_address = address(token);
 
         // Create the SuperSale and tell it about the token, set the goal, and set the open and close times to now and (now + 24 weeks):
-        SuperSale token_sale = new SuperSale(1, wallet, token, goal, now, now + 24 weeks);
+        SuperSale token_sale = new SuperSale(10000, wallet, token);
         token_sale_address = address(token_sale);
 
         // Make the SuperSale contract a minter, then have the SaleDeployer renounce its minter role:
