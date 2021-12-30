@@ -41,3 +41,10 @@ More info about this contract can be found here: https://medium.zanno.se/create-
 
 ---
 
+### SuperSale.sol
+
+A contract which uses "mint on demand" and that doesn't have an owner after it's deployed.
+
+Read more about the contract here: https://medium.zanno.se/mint-on-demand-contract-6c6518e603c1 
+
+---
