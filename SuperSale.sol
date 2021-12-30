@@ -621,7 +621,7 @@ contract SaleDeployer {
         Supercoin token = new Supercoin(name, symbol, 0);
         token_address = address(token);
 
-        // Create the SuperSale and tell it about the token, set the goal, and set the open and close times to now and (now + 24 weeks):
+        // Create the SuperSale and tell it about the token
         SuperSale token_sale = new SuperSale(10000, wallet, token);
         token_sale_address = address(token_sale);
 
