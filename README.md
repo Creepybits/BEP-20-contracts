@@ -35,4 +35,9 @@ More info here: https://medium.zanno.se/distribution-of-your-coin-part-1-43a9a7c
 
 ### MintedToken.sol
 
+Creates a basic token which leaves the creator as owner and minter.
+
+More info about this contract can be found here: https://medium.zanno.se/create-your-own-mintable-token-d8431cfee55f
+
+---
 
