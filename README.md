@@ -30,3 +30,9 @@ This is a very basic smart contract for a faucet as a way of distributing your c
 It doesn't have a website, but uses the UI of BscScan/Etherscan.
 
 More info here: https://medium.zanno.se/distribution-of-your-coin-part-1-43a9a7cd54e3
+
+---
+
+### MintedToken.sol
+
+
