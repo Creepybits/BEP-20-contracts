@@ -3,7 +3,8 @@
 
 The files in this respository are samples on how different types of contracts might be written, and what their functions are.
 
-A more in depth explaination can be found at https://medium.zanno.se
+ The contracts are eithers based off or inspired by Open Zeppelin https://github.com/OpenZeppelin/openzeppelin-contracts
+
 
 ---
 
