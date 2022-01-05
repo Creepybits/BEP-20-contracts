@@ -1,5 +1,12 @@
 // SPDX-License-Identifier: MIT
 
+/** 
+ * Disclaimer: This contract is eithers based off 
+ *  or inspired by Open Zeppelin https://github.com/OpenZeppelin/
+ *  Find out more about this and other contracts
+ *  at https://medium.zanno.se/
+ */
+
 pragma solidity ^0.5.0;
 
 contract Context {
