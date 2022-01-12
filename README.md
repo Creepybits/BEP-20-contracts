@@ -49,3 +49,10 @@ A contract which uses "mint on demand" and that doesn't have an owner after it's
 Read more about the contract here: https://medium.zanno.se/mint-on-demand-contract-6c6518e603c1 
 
 ---
+
+### TronMoney.sol
+
+A simple contract for launching a Token on the Tron Network.
+
+
+---
