@@ -12,13 +12,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sthnaqvi/erc20-asset-generator.git"
+    "url": "https://github.com/Creepybits/BEP-20-contracts/tree/Master/Automatic-Token"
   },
   "bugs": {
-    "url": "https://github.com/sthnaqvi/erc20-asset-generator/issues"
+    "url": ""
   },
-  "homepage": "https://github.com/sthnaqvi/erc20-asset-generator#readme",
-  "author": "Sayed Tauseef Naqvi <tauseef.naqvi786@gmail.com>",
+  "homepage": "https://github.com/Creepybits/BEP-20-contracts/tree/Master/Automatic-Token",
+  "author": "",
   "license": "MIT",
   "keywords": [
     "ethereum",
